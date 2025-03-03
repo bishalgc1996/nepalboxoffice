@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>
+   Box Office Nepal - Latest Nepali Box Office Collections & Records
+  </title>
+  <meta
+   name="description"
+   content="Get the latest updates on Nepali films' box office collections. See top-grossing movies in Nepal with real-time rankings & insights."
+  />
+  <link rel="icon" type="image/png" href="boxofficefavicon.png" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+   * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+   }
+
+   body {
+    background: #111;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    text-align: center;
+   }
+
+   h1 {
+    font-size: 2.5rem;
+    color: #f5c518;
+    font-weight: 600;
+    margin-bottom: 20px;
+   }
+
+   .header {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    background: #111;
+    position: fixed; /* Keeps it fixed at the top */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 70px;
+    z-index: 1000;
+   }
+
+   .logo-link {
+    display: flex;
+    align-items: center;
+   }
+
+   .logo {
+    height: 50px; /* Adjust logo size */
+    max-width: 180px;
+    transition: transform 0.2s ease-in-out;
+   }
+
+   .logo:hover {
+    transform: scale(1.05); /* Small zoom effect on hover */
+   }
+
+   @media (max-width: 600px) {
+    .logo {
+     height: 40px;
+     max-width: 140px;
+    }
+   }
+
+   .table-container {
+    width: 100%;
+    max-width: 900px;
+    overflow-x: auto;
+    margin-bottom: 30px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(255, 255, 255, 0.1);
+   }
+
+   table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #222;
+    color: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+   }
+
+   th,
+   td {
+    padding: 10px;
+    border: 1px solid #444;
+    text-align: center;
+   }
+
+   th {
+    background: #f5c518;
+    color: #111;
+    font-weight: bold;
+   }
+
+   .chart-container {
+    width: 100%;
+    max-width: 900px;
+   }
+
+   @media (max-width: 600px) {
+    h1 {
+     font-size: 2rem;
+    }
+
+    th,
+    td {
+     padding: 8px;
+     font-size: 14px;
+    }
+   }
+   .search-filter-container {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    width: 90%;
+    max-width: 900px;
+    margin-bottom: 15px;
+   }
+
+   .search-filter-container input,
+   .search-filter-container select {
+    flex: 1;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #f5c518;
+    font-size: 16px;
+   }
+
+   .search-filter-container select {
+    max-width: 200px;
+   }
+
+   /* Mobile Responsive */
+   @media (max-width: 600px) {
+    .search-filter-container {
+     flex-direction: column;
+     gap: 10px;
+    }
+   }
+
+   .sort-btn {
+    background: none;
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fbfbfb;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: color 0.3s ease-in-out;
+   }
+
+   .sort-btn:hover {
+    color: #ffd700; /* Brighter gold on hover */
+   }
+
+   .sort-btn:focus {
+    outline: none;
+   }
+
+   .sort-icon {
+    font-size: 14px;
+    transition: transform 0.3s ease-in-out;
+   }
+
+   /* Different Sorting States */
+   .sort-asc .sort-icon {
+    transform: rotate(180deg);
+   }
+
+   .sort-desc .sort-icon {
+    transform: rotate(0deg);
+   }
+  </style>
+ </head>
+ <body>
+  <header class="header">
+   <a href="https://nepalboxoffice.com/" class="logo-link">
+    <img src="boxofficefavicon.png" alt="Box Office Nepal Logo" class="logo" />
+   </a>
+  </header>
+
+  <h1>Box Office Nepal - Highest Grossing Films</h1>
+  <div class="search-filter-container">
+   <input type="text" id="searchInput" placeholder="Search for a movie..." />
+   <select id="yearFilter">
+    <option value="all">All Years</option>
+   </select>
+  </div>
+
+  <div class="table-container">
+   <table>
+    <thead>
+     <tr>
+      <th>Rank</th>
+      <th>
+       <button class="sort-btn" data-sort="title">
+        Movie <span class="sort-icon">↕</span>
+       </button>
+      </th>
+      <th>
+       <button class="sort-btn" data-sort="year">
+        Year <span class="sort-icon">↕</span>
+       </button>
+      </th>
+      <th>
+       <button class="sort-btn" data-sort="domestic">
+        Domestic Gross <span class="sort-icon">↕</span>
+       </button>
+      </th>
+      <th>
+       <button class="sort-btn" data-sort="worldwide">
+        Worldwide Gross <span class="sort-icon">↕</span>
+       </button>
+      </th>
+     </tr>
+    </thead>
+    <tbody id="movie-table">
+     <!-- Movie data will be inserted here dynamically -->
+    </tbody>
+   </table>
+  </div>
+
+  <div class="chart-container">
+   <canvas id="movieChart"></canvas>
+  </div>
+
+  <script>
+   const movies = [
+    {
+     rank: 1,
+     title: 'Purna Bahadur Ko Sarangi',
+     year: 2024,
+     domestic: 56.3,
+     worldwide: 83.3,
+    },
+    { rank: 2, title: '12 Gaun', year: 2024, domestic: 26.6, worldwide: 51.6 },
+    {
+     rank: 3,
+     title: 'Kabaddi 4: The Final Match',
+     year: 2022,
+     domestic: 23.5,
+     worldwide: 40.6,
+    },
+    {
+     rank: 4,
+     title: 'Chhakka Panja 5',
+     year: 2024,
+     domestic: 21.5,
+     worldwide: 41.1,
+    },
+    {
+     rank: 5,
+     title: 'Chhakka Panja 4',
+     year: 2023,
+     domestic: 17.53,
+     worldwide: 17.9,
+    },
+    { rank: 6, title: 'Jaari', year: 2023, domestic: 17.18, worldwide: 26 },
+    {
+     rank: 7,
+     title: 'Mahajatra',
+     year: 2024,
+     domestic: 16.08,
+     worldwide: 27.08,
+    },
+    {
+     rank: 8,
+     title: 'Chhakka Panja 3',
+     year: 2018,
+     domestic: 16,
+     worldwide: 20.3,
+    },
+    {
+     rank: 9,
+     title: 'Chhakka Panja',
+     year: 2016,
+     domestic: 15,
+     worldwide: 25,
+    },
+    {
+     rank: 10,
+     title: 'Chhakka Panja 2',
+     year: 2017,
+     domestic: 14.5,
+     worldwide: 28,
+    },
+    {
+     rank: 11,
+     title: 'Kabaddi Kabaddi Kabaddi',
+     year: 2019,
+     domestic: 13.5,
+     worldwide: 20,
+    },
+    {
+     rank: 12,
+     title: 'Shatru Gate',
+     year: 2018,
+     domestic: 12.54,
+     worldwide: 13.2,
+    },
+    { rank: 13, title: 'Kohinoor', year: 2014, domestic: 11, worldwide: 14 },
+    {
+     rank: 14,
+     title: 'Hrashwo Deergha',
+     year: 2024,
+     domestic: 10.6,
+     worldwide: 22,
+    },
+    {
+     rank: 15,
+     title: 'Boksi Ko Ghar',
+     year: 2024,
+     domestic: 10.2,
+     worldwide: 15,
+    },
+    {
+     rank: 16,
+     title: 'Dimag Kharab',
+     year: 2023,
+     domestic: 10.1,
+     worldwide: 10.67,
+    },
+    { rank: 17, title: 'Prem Geet 3', year: 2022, domestic: 10, worldwide: 40 },
+    {
+     rank: 18,
+     title: 'Chha Maya Chhapakkai',
+     year: 2019,
+     domestic: 9.4,
+     worldwide: 14,
+    },
+    {
+     rank: 19,
+     title: 'A Mero Hajur 3',
+     year: 2019,
+     domestic: 8.8,
+     worldwide: 12,
+    },
+    {
+     rank: 20,
+     title: 'Pashupati Prasad 2: Bhasme Don',
+     year: 2023,
+     domestic: 8.5,
+     worldwide: 12,
+    },
+   ]
+
+   const tableBody = document.getElementById('movie-table')
+
+   movies.forEach((movie) => {
+    const row = `<tr>
+                <td>${movie.rank}</td>
+                <td>${movie.title}</td>
+                <td>${movie.year}</td>
+                <td>${movie.domestic}</td>
+                <td>${movie.worldwide}</td>
+            </tr>`
+    tableBody.innerHTML += row
+   })
+
+   const ctx = document.getElementById('movieChart').getContext('2d')
+   new Chart(ctx, {
+    type: 'bar',
+    data: {
+     labels: movies.map((movie) => movie.title),
+     datasets: [
+      {
+       label: 'Domestic Gross (रू Cr)',
+       data: movies.map((movie) => movie.domestic),
+       backgroundColor: 'gold',
+      },
+      {
+       label: 'Worldwide Gross (रू Cr)',
+       data: movies.map((movie) => movie.worldwide),
+       backgroundColor: 'orange',
+      },
+     ],
+    },
+    options: {
+     indexAxis: 'y',
+     responsive: true,
+     maintainAspectRatio: false,
+     scales: {
+      x: { grid: { color: '#444' } },
+      y: { grid: { color: '#444' } },
+     },
+     plugins: {
+      legend: { position: 'top' },
+     },
+    },
+   })
+   // Search Functionality
+   document
+    .getElementById('searchInput')
+    .addEventListener('keyup', function () {
+     let filter = this.value.toLowerCase()
+     let rows = document.querySelectorAll('#movie-table tr')
+
+     rows.forEach((row) => {
+      let movieName = row.cells[1].innerText.toLowerCase()
+      row.style.display = movieName.includes(filter) ? '' : 'none'
+     })
+    })
+
+   document.addEventListener('DOMContentLoaded', function () {
+    const yearFilter = document.getElementById('yearFilter')
+    const searchInput = document.getElementById('searchInput')
+    const tableBody = document.getElementById('movie-table')
+    const sortButtons = document.querySelectorAll('.sort-btn')
+
+    let currentSort = { column: '', order: 'asc' }
+
+    function populateYearFilter() {
+     let years = [...new Set(movies.map((movie) => movie.year))].sort(
+      (a, b) => b - a
+     )
+     years.forEach((year) => {
+      let option = document.createElement('option')
+      option.value = year
+      option.textContent = year
+      yearFilter.appendChild(option)
+     })
+    }
+
+    function filterMovies() {
+     let searchTerm = searchInput.value.toLowerCase().trim()
+     let selectedYear = yearFilter.value
+
+     let filteredMovies = movies.filter((movie) => {
+      let isSearchMatch = movie.title.toLowerCase().includes(searchTerm)
+      let isYearMatch = selectedYear === 'all' || movie.year == selectedYear
+      return isSearchMatch && isYearMatch
+     })
+
+     sortAndRender(filteredMovies)
+    }
+
+    function sortAndRender(movieList) {
+     if (currentSort.column) {
+      movieList.sort((a, b) => {
+       let valueA = a[currentSort.column]
+       let valueB = b[currentSort.column]
+
+       if (typeof valueA === 'string') {
+        return currentSort.order === 'asc'
+         ? valueA.localeCompare(valueB)
+         : valueB.localeCompare(valueA)
+       } else {
+        return currentSort.order === 'asc' ? valueA - valueB : valueB - valueA
+       }
+      })
+     }
+
+     renderMovies(movieList)
+    }
+
+    function renderMovies(movieList) {
+     tableBody.innerHTML = ''
+     movieList.forEach((movie) => {
+      let row = `<tr>
+                    <td>${movie.rank}</td>
+                    <td>${movie.title}</td>
+                    <td>${movie.year}</td>
+                    <td>${movie.domestic}</td>
+                    <td>${movie.worldwide}</td>
+                </tr>`
+      tableBody.innerHTML += row
+     })
+    }
+
+    sortButtons.forEach((button) => {
+     button.addEventListener('click', function () {
+      let column = this.getAttribute('data-sort')
+
+      if (currentSort.column === column) {
+       currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc'
+      } else {
+       currentSort.column = column
+       currentSort.order = 'asc'
+      }
+
+      sortButtons.forEach((btn) =>
+       btn.classList.remove('sort-asc', 'sort-desc')
+      )
+
+      this.classList.add(currentSort.order === 'asc' ? 'sort-asc' : 'sort-desc')
+
+      filterMovies()
+     })
+    })
+
+    populateYearFilter()
+    searchInput.addEventListener('keyup', filterMovies)
+    yearFilter.addEventListener('change', filterMovies)
+
+    renderMovies(movies)
+   })
+  </script>
+  <script type="application/ld+json">
+   {
+    "@context": "https://schema.org",
+    "@type": "Movie",
+    "name": "Box Office Nepal",
+    "description": "Top grossing Nepali movies with real-time box office collection updates.",
+    "url": "https://nepalboxoffice.com/"
+   }
+  </script>
+  <footer style="margin-top: 20px; font-size: 14px; color: #ccc">
+   Source:
+   <a
+    href="https://en.wikipedia.org/wiki/List_of_highest-grossing_films_in_Nepal"
+    target="_blank"
+    style="color: #f5c518; text-decoration: none"
+    >Wikipedia</a
+   >
+  </footer>
+ </body>
+</html>
